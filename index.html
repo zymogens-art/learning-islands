@@ -1,0 +1,549 @@
+<!doctype html>
+<html lang="zh-Hant-TW">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<title>學習群島</title>
+<meta name="description" content="國中生的 YouTube 學習地圖：37 位老師、111 支精選教學影片，在頁面內專注觀看。">
+<meta property="og:title" content="學習群島">
+<meta property="og:description" content="國中生的 YouTube 學習地圖：37 位老師、111 支精選教學影片。">
+<meta name="theme-color" content="#1a6280">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%232a8bab'/%3E%3Cellipse cx='32' cy='38' rx='22' ry='14' fill='%23f4e1b0' stroke='%2316313b' stroke-width='3'/%3E%3Ccircle cx='32' cy='34' r='10' fill='%23ff6b3d' stroke='%2316313b' stroke-width='3'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chiron+GoRound+TC:wght@500;700;900&family=Noto+Sans+TC:wght@400;500;700&display=swap">
+<style>
+/* 版面：一張海圖（10 座科目島，中央是全科港）＋ 下方碼頭面板（該島老師與影片）＋ 全螢幕專注播放艙 */
+:root{
+  --sea:#2a8bab;
+  --sea-deep:#1a6280;
+  --shallow:#86d0dc;
+  --sand:#f4e1b0;
+  --paper:#fbf7ec;
+  --card:#ffffff;
+  --ink:#16313b;
+  --ink-soft:#4d6670;
+  --line:#dfd5bd;
+  --buoy:#ff6b3d;
+  --stamp:#c8372d;
+  --font-display:"Chiron GoRound TC","Huninn","Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif;
+  --font-body:"Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{
+  background:var(--paper);color:var(--ink);
+  font-family:var(--font-body);font-size:15px;line-height:1.6;
+  padding-left:max(16px,env(safe-area-inset-left,0px));
+  padding-right:max(16px,env(safe-area-inset-right,0px));
+  padding-block:0 48px;
+}
+img{max-width:100%}
+[hidden]{display:none!important}
+button{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--buoy);outline-offset:2px;border-radius:6px}
+
+.wrap{max-width:1120px;margin:0 auto}
+
+/* ---------- 頂部航海日誌 ---------- */
+header.top{
+  display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:16px 24px;
+  padding-block:28px 18px;
+}
+.brand h1{
+  font-family:var(--font-display);font-weight:900;font-size:clamp(34px,6vw,54px);
+  line-height:1;margin:0;letter-spacing:.04em;color:var(--sea-deep);
+}
+.brand h1 span{color:var(--buoy)}
+.brand p{margin:8px 0 0;color:var(--ink-soft);max-width:34em;text-wrap:balance}
+.log{display:flex;flex-wrap:wrap;align-items:center;gap:10px}
+.passport{
+  display:flex;align-items:center;gap:10px;background:var(--card);border:2px solid var(--ink);
+  border-radius:14px;padding:6px 14px 6px 8px;box-shadow:3px 3px 0 var(--ink);
+}
+.passport .ring{width:40px;height:40px}
+.passport b{font-family:var(--font-display);font-size:20px;font-variant-numeric:tabular-nums}
+.passport small{display:block;color:var(--ink-soft);font-size:12px;line-height:1.2}
+.btn{
+  cursor:pointer;border:2px solid var(--ink);background:var(--buoy);color:#fff;
+  font-family:var(--font-display);font-weight:700;font-size:15px;
+  padding:9px 16px;border-radius:12px;box-shadow:3px 3px 0 var(--ink);
+  transition:transform .12s, box-shadow .12s;
+}
+.btn:hover{transform:translate(-1px,-1px);box-shadow:4px 4px 0 var(--ink)}
+.btn:active{transform:translate(2px,2px);box-shadow:1px 1px 0 var(--ink)}
+.btn.ghost{background:var(--card);color:var(--ink)}
+
+.search{
+  display:flex;align-items:center;gap:8px;background:var(--card);border:2px solid var(--ink);
+  border-radius:12px;padding:0 12px;min-width:0;flex:1 1 220px;max-width:340px;
+}
+.search input{border:0;outline:0;background:transparent;font:inherit;padding:9px 0;min-width:0;flex:1;color:var(--ink)}
+.search svg{flex:none}
+
+/* ---------- 海圖 ---------- */
+.chart{
+  position:relative;border:3px solid var(--ink);border-radius:22px;overflow:hidden;
+  background:var(--sea);box-shadow:5px 5px 0 var(--ink);
+}
+.chart svg{display:block;width:100%;height:auto}
+.island{cursor:pointer}
+.island .land{transition:transform .25s ease;transform-box:fill-box;transform-origin:center}
+.island:hover .land,.island:focus-visible .land{transform:scale(1.05)}
+.island:focus{outline:none}
+.island:focus-visible .badge{stroke:var(--buoy);stroke-width:6}
+.island .pulse{opacity:0}
+.island.on .pulse{opacity:1;animation:pulse 2.2s ease-out infinite;transform-box:fill-box;transform-origin:center}
+@keyframes pulse{0%{transform:scale(.9);opacity:.9}100%{transform:scale(1.35);opacity:0}}
+.waves{animation:drift 14s linear infinite}
+@keyframes drift{from{transform:translateX(0)}to{transform:translateX(-80px)}}
+.compass{position:absolute;right:14px;bottom:10px;font-family:var(--font-display);color:#fff;font-size:12px;opacity:.85;letter-spacing:.1em}
+
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px}
+.chip{
+  cursor:pointer;display:flex;align-items:center;gap:6px;border:2px solid var(--ink);border-radius:999px;
+  background:var(--card);padding:4px 12px 4px 4px;font-family:var(--font-display);font-weight:700;font-size:14px;
+}
+.chip i{
+  font-style:normal;width:26px;height:26px;border-radius:50%;display:grid;place-items:center;color:#fff;font-size:14px;
+}
+.chip[aria-pressed="true"]{background:var(--ink);color:var(--paper)}
+.chip em{font-style:normal;font-weight:500;font-size:12px;opacity:.7;font-variant-numeric:tabular-nums}
+
+/* ---------- 碼頭面板 ---------- */
+.dock{margin-top:28px}
+.dock-head{display:flex;flex-wrap:wrap;align-items:center;gap:12px 16px;margin-bottom:18px}
+.dock-flag{
+  width:58px;height:58px;border-radius:16px;border:3px solid var(--ink);display:grid;place-items:center;
+  font-family:var(--font-display);font-weight:900;font-size:30px;color:#fff;box-shadow:3px 3px 0 var(--ink);flex:none;
+}
+.dock-head h2{font-family:var(--font-display);font-size:28px;margin:0;line-height:1.1}
+.dock-head p{margin:2px 0 0;color:var(--ink-soft)}
+.dock-head .grow{flex:1;min-width:0}
+
+.channels{display:grid;gap:22px}
+.channel{
+  background:var(--card);border:2px solid var(--ink);border-radius:18px;padding:16px;
+}
+.channel-top{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 12px;margin-bottom:12px}
+.channel-top h3{font-family:var(--font-display);font-size:19px;margin:0}
+.channel-top span{color:var(--ink-soft);font-size:13.5px}
+.channel-top .subs{
+  margin-left:auto;font-size:12px;font-weight:700;border:1.5px solid var(--line);border-radius:999px;padding:1px 10px;
+  font-variant-numeric:tabular-nums;color:var(--ink-soft)
+}
+.vids{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+.vid{
+  cursor:pointer;text-align:left;border:0;background:transparent;padding:0;display:flex;flex-direction:column;gap:8px;min-width:0;position:relative;
+}
+.thumb{
+  position:relative;aspect-ratio:16/9;max-width:100%;border-radius:12px;overflow:hidden;border:2px solid var(--ink);
+  background:var(--shallow);
+}
+.thumb img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .3s}
+.vid:hover .thumb img{transform:scale(1.05)}
+.thumb .play{
+  position:absolute;inset:auto auto 8px 8px;width:34px;height:34px;border-radius:50%;background:var(--buoy);
+  border:2px solid var(--ink);display:grid;place-items:center;
+}
+.vid h4{margin:0;font-size:14.5px;line-height:1.4;font-weight:700}
+.vid small{color:var(--ink-soft);font-size:12.5px;font-variant-numeric:tabular-nums}
+.vid small b{font-weight:500;color:var(--ink)}
+.stampmark{
+  position:absolute;top:-6px;right:-6px;width:58px;height:58px;border-radius:50%;
+  border:3px double var(--stamp);color:var(--stamp);background:rgba(255,255,255,.88);
+  display:grid;place-items:center;transform:rotate(-14deg);
+  font-family:var(--font-display);font-weight:900;font-size:13px;line-height:1.05;text-align:center;
+}
+.empty{padding:28px;border:2px dashed var(--line);border-radius:18px;text-align:center;color:var(--ink-soft)}
+
+/* ---------- 專注播放艙 ---------- */
+.cabin{
+  position:fixed;inset:0;z-index:50;background:rgba(10,30,38,.94);
+  display:flex;align-items:center;justify-content:center;
+  padding:max(16px,env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) max(16px,env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px));
+}
+.cabin-inner{width:min(1040px,100%);display:flex;flex-direction:column;gap:14px;color:#f4efe2}
+.cabin-bar{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.cabin-bar .tag{
+  font-family:var(--font-display);font-weight:700;font-size:13px;padding:3px 10px;border-radius:999px;color:#fff;
+}
+.cabin-bar .focus{font-size:13px;opacity:.7}
+.cabin-bar .x{margin-left:auto}
+.screen{position:relative;aspect-ratio:16/9;max-width:100%;width:100%;background:#000;border-radius:14px;overflow:hidden;border:3px solid #f4efe2}
+.screen iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
+.cabin h2{font-family:var(--font-display);margin:0;font-size:clamp(18px,2.6vw,24px);line-height:1.35;text-wrap:balance}
+.cabin .meta{opacity:.75;font-size:14px;margin-top:2px}
+.cabin-actions{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.cabin .btn.ghost{background:transparent;color:#f4efe2;border-color:#f4efe2;box-shadow:3px 3px 0 #f4efe2}
+.cabin .btn{box-shadow:3px 3px 0 #f4efe2;border-color:#f4efe2}
+.cabin .btn.done{background:var(--stamp)}
+.cabin details{font-size:13px;opacity:.7}
+.cabin details a{color:#f4efe2}
+
+.toast{
+  position:fixed;left:50%;bottom:max(24px,env(safe-area-inset-bottom,0px));transform:translateX(-50%) translateY(20px);
+  background:var(--ink);color:var(--paper);padding:10px 18px;border-radius:12px;font-family:var(--font-display);
+  opacity:0;transition:all .25s;z-index:60;pointer-events:none;
+}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+footer{margin-top:40px;color:var(--ink-soft);font-size:13px}
+
+@media (max-width:760px){
+  .vids{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .search{max-width:none}
+}
+@media (max-width:480px){
+  .vids{grid-template-columns:minmax(0,1fr)}
+  .channel{padding:12px}
+  .dock-head h2{font-size:23px}
+}
+@media (prefers-reduced-motion:reduce){
+  *{animation:none!important;transition:none!important}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="top">
+  <div class="brand">
+    <h1>學習<span>群島</span></h1>
+    <p>37 位老師、111 支精選教學影片。點一座島靠岸，影片就在這裡播放，不會跑去別的地方。</p>
+  </div>
+  <div class="log">
+    <div class="passport" title="看完影片按「蓋郵戳」收集">
+      <svg class="ring" viewBox="0 0 40 40" aria-hidden="true">
+        <circle cx="20" cy="20" r="16" fill="none" stroke="#dfd5bd" stroke-width="5"/>
+        <circle id="ringArc" cx="20" cy="20" r="16" fill="none" stroke="#c8372d" stroke-width="5" stroke-linecap="round"
+          stroke-dasharray="0 101" transform="rotate(-90 20 20)"/>
+      </svg>
+      <div><b id="stampCount">0</b><b> / 111</b><small>航海郵戳</small></div>
+    </div>
+    <button class="btn" id="randomBtn" type="button">隨機出航</button>
+  </div>
+</header>
+
+<label class="search" for="q">
+  <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5" fill="none" stroke="#16313b" stroke-width="2.4"/><path d="M15.5 15.5 21 21" stroke="#16313b" stroke-width="2.4" stroke-linecap="round"/></svg>
+  <input id="q" type="search" placeholder="找單元、老師，例如：月相、乘法公式" autocomplete="off">
+</label>
+
+<section class="chart" aria-label="學習群島海圖" style="margin-top:16px">
+  <svg id="map" viewBox="0 0 1000 640" role="group" aria-label="科目島嶼"></svg>
+  <div class="compass">N ↑ 學習群島海圖</div>
+</section>
+<nav class="chips" id="chips" aria-label="選擇科目島"></nav>
+
+<section class="dock" id="dock" aria-live="polite"></section>
+
+<footer>
+  頻道與觀看數為 2026 年 10 月 25 日整理。影片版權屬各頻道所有，本頁僅以嵌入方式播放。
+</footer>
+</div>
+
+<div class="cabin" id="cabin" role="dialog" aria-modal="true" aria-labelledby="cabinTitle" hidden>
+  <div class="cabin-inner">
+    <div class="cabin-bar">
+      <span class="tag" id="cabinTag">數學島</span>
+      <span class="focus">專注模式：看完再回海圖</span>
+      <button class="btn ghost x" id="closeBtn" type="button">回到海圖</button>
+    </div>
+    <div class="screen" id="screen"></div>
+    <div>
+      <h2 id="cabinTitle"></h2>
+      <div class="meta" id="cabinMeta"></div>
+    </div>
+    <div class="cabin-actions">
+      <button class="btn ghost" id="prevBtn" type="button">上一支</button>
+      <button class="btn done" id="doneBtn" type="button">看完了，蓋郵戳</button>
+      <button class="btn ghost" id="nextBtn" type="button">下一支</button>
+    </div>
+    <details>
+      <summary>影片顯示無法播放？</summary>
+      少數影片被頻道設定為不能嵌入，可請老師或家長協助 <a id="ytFallback" href="#" target="_blank" rel="noopener">到 YouTube 觀看</a>。
+    </details>
+  </div>
+</div>
+
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+/* ===== 資料 ===== */
+const ISLANDS=[
+ {key:"all",name:"全科港",glyph:"全",color:"#ef7d2e",x:500,y:330,r:84,desc:"多科目的平台與團隊，從這裡出發最方便。",ch:[
+  ["均一教育平台","均一教育平台","21.2萬",[["8xmkF8lwxLY","用短除法求最大公因數","21萬"],["y2-1qy2W4_8","【觀念】細胞分裂與減數分裂","18萬"],["lJo3dp_C0Do","正數與負數","17萬"]]],
+  ["臺北酷課雲","臺北市政府教育局","16.3萬",[["gUsTvhMoTa4","國中地科：月相的成因","16萬"],["HClBqwoF100","國七地理：位置表達","13萬"],["_eiUU-U2Tj8","七上生物：細胞的構造與功能","10萬"]]],
+  ["Ai學霸","Ai學霸師資團隊","1.95萬",[["39mrct-xTHI","3D實驗室：動物細胞的滲透作用","26萬"],["914aev_wbcs","3D實驗室：岩層動起來","10萬"],["NkthWy9-hT4","國中數學二上：平方差公式的應用","8.5萬"]]],
+  ["Ten叔叔的10%學習法","Ten叔叔","1.25萬",[["OqQHUa0yZQM","國一上國文：楊喚〈夏夜〉深度對談","7,310"],["pAhr5T5ACXQ","國一上地理第1章：認識位置與地圖","6,033"],["hdfCWwo7iJI","國二上歷史：商周至隋唐的國家與社會","5,399"]]],
+  ["逗點教室","逗點教室（桃園）","1,730",[["WhaWmRrMf0c","110會考數學科重點題目詳解","1,377"],["2S8FOM5PaSQ","國二理化第三次段考考前猜題","1,341"],["r-LyUzu8kfM","國二理化第二次段考考前猜題","1,177"]]]
+ ]},
+ {key:"math",name:"數學島",glyph:"數",color:"#e9a91c",x:175,y:150,r:64,desc:"從數線、乘法公式到會考壓軸題。",ch:[
+  ["國高中數學急救包","鄧強老師","9.2萬",[["cpqjUlP9YPo","國一上 1-1 數與數線","24萬"],["i9T-sAozHdE","國二上 1-1 乘法公式","17萬"],["LdyCd1J-KUk","國一下 1-1 二元一次式的化簡","11萬"]]],
+  ["數學很簡單","何肇忠老師","5.99萬",[["JaDsZEv9SmQ","數學快乘法、快算法","40萬"],["669zCCWIWak","七上 解一元一次方程式（1）","10萬"],["MnRxztCAEng","七上 1-1 正數、負數與數線","7.2萬"]]],
+  ["凱爺數學招待所","洪英凱老師","2.15萬",[["4WRf14AHunU","國一上 1-2 正負數加減法","1.5萬"],["rxAFjBRDoPg","國一上段考精選：濃度問題","1.4萬"],["yfhd6pqUSng","國一上 1-4 指數記法與科學記號","6,215"]]],
+  ["劉星數學","劉星老師","1.01萬",[["uwiT9Ef2g3s","國際競賽題：圓的性質、圓周角","5萬"],["HJ7Z9rmbUOY","114會考數學必考觀念：特殊角度與比例","4.7萬"],["owbGRIYufHs","112會考數學科逐題解析","4.3萬"]]]
+ ]},
+ {key:"eng",name:"英文島",glyph:"英",color:"#e8566c",x:385,y:110,r:54,desc:"單字、文法、聽力一次補齊。",ch:[
+  ["阿滴英文","阿滴","293萬",[["gkVpNq4-wqs","完整全解析：最有效背單字法","270萬"],["bou9Ij7jRUE","不用背規則！對英文文法改觀 feat. 旋元佑","142萬"],["7sXGfQ6R6nc","阿滴教文法 #2：完成式","79萬"]]],
+  ["外文列車","外文列車創辦人","2.27萬",[["ovOE4pMQFPA","國一上英文第一課單字","10萬"],["GKhkx5ZKP18","初級英檢複試口說必考題","4.3萬"],["jpLKanluujo","國一上英文第二課單字","3.1萬"]]],
+  ["Ai學霸 國中英語","Yvonne 老師","4,680",[["kxvGZcIfLTs","七上：祈使句的逗號與正確寫法","1.9萬"],["7N7c5Sf_wj4","八下：形容詞比較級 -er 或 more","1.6萬"],["1Nj-ftsKve0","七下：現在簡單式 do 和 does","1.6萬"]]]
+ ]},
+ {key:"chi",name:"國文島",glyph:"文",color:"#7a5cc4",x:640,y:108,r:60,desc:"文言文、閱讀測驗、作文技巧。",ch:[
+  ["陳漢國文","陳漢老師","1.16萬",[["OdweEbq65OY","會考國文答題技巧公開","21萬"],["M2t_u6GM0UE","會考倒數：成為黑馬的衝刺方法","4.9萬"],["kLY0b46W6Sw","考場上文言文看不懂怎麼辦","2.5萬"]]],
+  ["九歌X輕鬆點國文","兩位補教國文老師","1.79萬",[["JRZOowz9V7c","文言閱讀技巧：以111國三模考為例","9萬"],["Yk_scInE7D4","110會考國文解題技法：句意解讀、文意選填","7萬"],["RWlfY3r-D_k","會考前七天，十分鐘幫你加十分","3.5萬"]]],
+  ["陳蒂國文","陳蒂老師與團隊","2.62萬",[["xbYDZYcqovY","作文最後一段怎麼寫","9.7萬"],["OzHuaveL4Fo","國中作文從4級分躍升5、6級分","6萬"],["ngqcozcQACw","長文要怎麼讀得快","5.5萬"]]],
+  ["國文哪有這麼難","詹芸老師","2.7萬",[["pYNN1Nak5Og","會考國文：掌握七步驟","4萬"],["NvsnfpTdZOY","會考國文科複習講義全攻略","3.9萬"],["HR_l4tQj1Ho","五分鐘學六書","2.5萬"]]],
+  ["鄒老師十分鐘國文輕鬆讀","鄒老師","8,350",[["4Aq_BWXzTwA","左傳：燭之武退秦師","2.9萬"],["3HG4pMgs0G8","史記：鴻門宴 #1","2.3萬"],["2AmWUVpdaGU","禮記：大同與小康","1.7萬"]]]
+ ]},
+ {key:"his",name:"歷史島",glyph:"史",color:"#c2493a",x:845,y:175,r:64,desc:"臺灣史、中國史、世界史的故事與重點。",ch:[
+  ["李天豪","李天豪老師","43.3萬",[["FG0ESGgFhCM","日本為什麼對美國宣戰？","103萬"],["t56gJSJAJvc","天豪公開課：台灣版中國現代史","77萬"],["uGKvWIXO-Rw","元朝為什麼滅亡？","67萬"]]],
+  ["Taiwan Bar 臺灣吧","臺灣吧團隊","126萬",[["mYSSQJEoGRU","從威權到民主：臺灣近代民主化歷程","296萬"],["ye_VrUHSJ4E","臺灣現代化：劉銘傳與蔣經國","238萬"],["9t8g9WS0ha0","為什麼要說國語？","196萬"]]],
+  ["宜蓉的歷史課","吳宜蓉老師","9.2萬",[["cYSyHDqq8a4","八年級中國史：從封建到郡縣","18萬"],["MAhaSR6wj5w","臺灣史重點整理：歷史第一冊","12萬"],["BAimZl31JFY","中國史重點整理：宋元明清","8.8萬"]]],
+  ["港港社會 一學就會","港港老師","6.98萬",[["EEv6nA2AaoI","歷史國二上第1次段考大猜題","4.6萬"],["xN6zxojwJZc","歷史國二上第2次段考大猜題","4.1萬"],["j59A67csn3A","歷史國二下第3次段考大猜題","4萬"]]],
+  ["學習銀行 StudyBank","彤妤老師","3.32萬",[["5qMaHKZz7-E","臺灣地形分布：國七地理","11萬"],["zp5aG8IQVjc","111會考社會科考前衝刺","9.8萬"],["JUZLcWJgM7c","台灣天氣與氣候：國七地理","8.7萬"]]]
+ ]},
+ {key:"geo",name:"地理島",glyph:"地",color:"#b9822c",x:880,y:410,r:58,desc:"地圖、地形、氣候，看懂世界的樣子。",ch:[
+  ["翻轉地理教室","翻轉地理教室","1.74萬",[["Gj0hkXJh4NQ","國一上 L1-1 位置、地圖","5.2萬"],["IVEyIgvzkq8","國三總複習：世界海陸分布與重要航線","2.8萬"],["nc4G8lI77yY","國二上 L1-1 中國的位置與地形","2.1萬"]]],
+  ["朱航儀老師的地理","朱航儀老師","5,650",[["x9ZqtKLs8Q8","台灣地理總複習 part1","4.7萬"],["J5khRtL4lWA","世界氣候複習","1.6萬"],["3uiNy_cbhf4","八下 L5-1 西亞與北非的地形","1.5萬"]]],
+  ["思路建立","陳冠劭老師、哲銘老師","529",[["ZwmdZoQzMaM","115會考社會科解析","1,844"],["cOofN8WEnyo","冰島實地：河階、瀑布、差異侵蝕","1,693"],["r95OwKrtW_E","116會考一模解析","1,611"]]]
+ ]},
+ {key:"civ",name:"公民島",glyph:"公",color:"#2f6fd0",x:715,y:545,r:50,desc:"政府、法律、社會，用幾分鐘看懂。",ch:[
+  ["公民叮","公民叮團隊","6.68萬",[["TLCoW2ExjzE","四分半鐘看完國中會考","23萬"],["u1yhKJH1htM","5分鐘看完！國中會考：公民","20萬"],["T-m-95keSyM","國二上 地方政府（1）地方自治的原則","11萬"]]]
+ ]},
+ {key:"bio",name:"生物島",glyph:"生",color:"#3f9e4f",x:470,y:560,r:50,desc:"細胞、遺傳、生殖與各大系統。",ch:[
+  ["曾鋒老師的生物教室","曾鋒老師","4.58萬",[["Do7p1pBAFuc","國一下 1-1 生物的生殖：有性與無性","5.8萬"],["ojPDZrsJjZo","國一上 5-1 神經系統先備：受器與動器","4.8萬"],["BxAcuTt5Zms","國一下 3-6 動物界介紹","4.7萬"]]]
+ ]},
+ {key:"phy",name:"理化島",glyph:"理",color:"#169aa3",x:250,y:520,r:60,desc:"力學、波動、化學反應，國二國三必修。",ch:[
+  ["韓斯頭殼 HansTalk","Hans 老師","4.56萬",[["NvlOHClfNZ8","112會考自然全範圍重點整理","25萬"],["s4cBG5bDSZ4","111會考：生物、理化、地科重點整理","18萬"],["A1BBOvByWw0","九年級第一次模考重點整理","13萬"]]],
+  ["震東老師 & 數學甜心禹臻","震東老師、禹臻老師","2.97萬",[["f7TPx9H9oyY","國二理化：力分析、畫力圖","28萬"],["110edycNDNU","月相全解說：朔、上弦、望、下弦","10萬"],["1UcnZt55r4Y","國三理化 CH3 功與能量（上）","3.6萬"]]],
+  ["FOX老師教學分享","FOX 老師","1.42萬",[["aFrpiwW-2lI","凸透鏡六大成像記憶法","3萬"],["5izNfytljj4","化學反應式寫法與係數平衡","1.6萬"],["HaJImoq1vbc","國二理化：實驗室安全與器材介紹","6,121"]]],
+  ["國中理化自學","國中理化自學","8,760",[["JlsvyZdsOeY","國二上 1-1 進入實驗室","5.3萬"],["85KT5iGKDJM","國二下 1-1 質量守恆定律","3.5萬"],["tLIT9SASfO4","國三上 1-1 時間","2.2萬"]]]
+ ]},
+ {key:"sci",name:"自然島",glyph:"自",color:"#5a9c2e",x:120,y:360,r:62,desc:"生物、理化、地科的綜合複習。",ch:[
+  ["劉維自然","劉維老師","12.5萬",[["11HromiumNA","8年級怎麼念理化：週期表","23萬"],["u9FJJLSqpz0","橫波：週期、頻率、波速、波長","19萬"],["uoUa_0eX0_M","血液循環與心臟循環","17萬"]]],
+  ["自然老師劉翔研究中","劉翔老師","1.29萬",[["f6Xo-MKBPhI","國二上 1-1 基本測量（觀念講解）","2.8萬"],["ZBSzrl78FBg","國一上生物 2-2 細胞構造","1.4萬"],["qcSmgWvtjBI","國一下 1-1 染色體、細胞分裂、減數分裂","1.3萬"]]],
+  ["王捷自然&自然不難","王捷老師","1.79萬",[["b0UGnsoSkA4","段考抱佛腳：國二上理化第一次段考","2.4萬"],["LZ0lDLxrjcg","國二上理化 CH4-3 透鏡成像","2萬"],["3Xb5iohYoOg","國二上理化 CH3-1 波的特性","1.9萬"]]],
+  ["張妤自然","張妤老師","1.54萬",[["C6NzRRZvdf0","七上生物第二次段考歷屆試題精選","2.3萬"],["KJURR0zUAZw","八上理化第一次段考精選題型","1.9萬"],["LD2Ja7nV71U","七上生物第三次段考歷屆試題精選","1.9萬"]]],
+  ["廖柏坤資優自然","廖柏坤老師","1.1萬",[["C26BO4_AWJo","107國中會考自然科題型分析與詳解","2.4萬"],["Tk97DeQS-xw","白努力定律：用吸管製造水霧","2.3萬"],["HvQi9uFWWUo","108會考自然科解析與詳解","1.8萬"]]],
+  ["張囧的自然小教室","張囧老師","3,030",[["OHWigrKK0SE","科學方法簡介","2,384"],["b4cbi5GDEmQ","會考會怎麼考：國一上生物 1-1 生命現象","528"],["LPCJqMDwibs","會考會怎麼考：巨觀尺度與微觀尺度","359"]]]
+ ]}
+];
+
+/* 攤平成影片清單 */
+const VIDEOS=[];
+ISLANDS.forEach(is=>is.ch.forEach(c=>c[3].forEach(v=>VIDEOS.push({id:v[0],title:v[1],views:v[2],channel:c[0],teacher:c[1],island:is}))));
+
+/* ===== 郵戳（只存在這台瀏覽器） ===== */
+let stamps=new Set();
+try{stamps=new Set(JSON.parse(localStorage.getItem("islands-stamps")||"[]"))}catch(e){}
+function saveStamps(){try{localStorage.setItem("islands-stamps",JSON.stringify([...stamps]))}catch(e){}}
+
+/* ===== 工具 ===== */
+const $=s=>document.querySelector(s);
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const NS="http://www.w3.org/2000/svg";
+function rng(seed){return()=>{seed=(seed*16807)%2147483647;return(seed-1)/2147483646}}
+function blob(cx,cy,r,seed,wob=.2,n=13){
+  const R=rng(seed),pts=[];
+  for(let i=0;i<n;i++){const a=i/n*Math.PI*2,k=r*(1-wob/2+R()*wob);pts.push([cx+Math.cos(a)*k*1.12,cy+Math.sin(a)*k*.86])}
+  let d="";
+  for(let i=0;i<n;i++){
+    const p0=pts[(i-1+n)%n],p1=pts[i],p2=pts[(i+1)%n],p3=pts[(i+2)%n];
+    if(i===0)d+=`M${p1[0].toFixed(1)},${p1[1].toFixed(1)}`;
+    const c1=[p1[0]+(p2[0]-p0[0])/6,p1[1]+(p2[1]-p0[1])/6],c2=[p2[0]-(p3[0]-p1[0])/6,p2[1]-(p3[1]-p1[1])/6];
+    d+=`C${c1[0].toFixed(1)},${c1[1].toFixed(1)} ${c2[0].toFixed(1)},${c2[1].toFixed(1)} ${p2[0].toFixed(1)},${p2[1].toFixed(1)}`;
+  }
+  return d+"Z";
+}
+function mix(hex,amt){ // 與白色混合
+  const n=parseInt(hex.slice(1),16),r=n>>16,g=n>>8&255,b=n&255;
+  const f=c=>Math.round(c+(255-c)*amt);return`rgb(${f(r)},${f(g)},${f(b)})`;
+}
+function islandDone(is){let t=0,d=0;is.ch.forEach(c=>c[3].forEach(v=>{t++;if(stamps.has(v[0]))d++}));return[d,t]}
+
+/* ===== 畫海圖 ===== */
+function drawMap(){
+  const svg=$("#map");svg.innerHTML="";
+  const defs=document.createElementNS(NS,"defs");
+  defs.innerHTML=`<pattern id="wv" width="80" height="40" patternUnits="userSpaceOnUse">
+     <path d="M6 22 q8 -8 16 0 t16 0" fill="none" stroke="rgba(255,255,255,.22)" stroke-width="2.4" stroke-linecap="round"/>
+     <path d="M46 6 q6 -6 12 0 t12 0" fill="none" stroke="rgba(255,255,255,.14)" stroke-width="2" stroke-linecap="round"/></pattern>
+   <radialGradient id="seaG" cx="50%" cy="50%" r="70%"><stop offset="0" stop-color="#3aa3c2"/><stop offset="1" stop-color="#1d6a88"/></radialGradient>`;
+  svg.appendChild(defs);
+  svg.insertAdjacentHTML("beforeend",`<rect width="1000" height="640" fill="url(#seaG)"/>
+    <g class="waves"><rect x="0" y="0" width="1100" height="640" fill="url(#wv)"/></g>`);
+
+  // 航線
+  const hub=ISLANDS[0];const routes=document.createElementNS(NS,"g");
+  ISLANDS.slice(1).forEach((is,i)=>{
+    const mx=(hub.x+is.x)/2+(i%2?30:-30),my=(hub.y+is.y)/2+(i%2?-24:24);
+    const p=document.createElementNS(NS,"path");
+    p.setAttribute("d",`M${hub.x},${hub.y} Q${mx},${my} ${is.x},${is.y}`);
+    p.setAttribute("fill","none");p.setAttribute("stroke","rgba(255,255,255,.55)");
+    p.setAttribute("stroke-width","2.5");p.setAttribute("stroke-dasharray","2 10");p.setAttribute("stroke-linecap","round");
+    if(i===2)p.id="route";
+    routes.appendChild(p);
+  });
+  svg.appendChild(routes);
+
+  // 小船
+  svg.insertAdjacentHTML("beforeend",`<g id="boat"><path d="M-14,0 L14,0 L9,8 L-9,8 Z" fill="#fbf7ec" stroke="#16313b" stroke-width="2"/>
+    <path d="M0,-20 L0,0 M0,-20 L12,-4 L0,-4" fill="#ff6b3d" stroke="#16313b" stroke-width="2" stroke-linejoin="round"/>
+    <animateMotion dur="16s" repeatCount="indefinite" rotate="0" keyPoints="0;1;0" keyTimes="0;.5;1" calcMode="linear"><mpath href="#route"/></animateMotion></g>`);
+  if(matchMedia("(prefers-reduced-motion: reduce)").matches)$("#boat animateMotion")?.remove();
+
+  ISLANDS.forEach((is,i)=>{
+    const g=document.createElementNS(NS,"g");
+    g.setAttribute("class","island"+(is.key===current?" on":""));
+    g.setAttribute("tabindex","0");g.setAttribute("role","button");
+    const [d,t]=islandDone(is);
+    g.setAttribute("aria-label",`${is.name}，${is.ch.length} 位老師，已蓋 ${d} / ${t} 個郵戳`);
+    const seed=(i+3)*7919;
+    const circ=2*Math.PI*30, frac=t?d/t:0;
+    g.innerHTML=`
+      <path class="pulse" d="${blob(is.x,is.y,is.r+26,seed,.12)}" fill="none" stroke="#fff" stroke-width="3"/>
+      <g class="land">
+        <path d="${blob(is.x,is.y,is.r+16,seed,.16)}" fill="${'#86d0dc'}" opacity=".55"/>
+        <path d="${blob(is.x,is.y+4,is.r+4,seed+1,.2)}" fill="rgba(10,40,52,.25)"/>
+        <path d="${blob(is.x,is.y,is.r+4,seed+1,.2)}" fill="#f4e1b0" stroke="#16313b" stroke-width="2.5"/>
+        <path d="${blob(is.x,is.y-3,is.r-8,seed+2,.28)}" fill="${mix(is.color,.55)}"/>
+        ${trees(is,seed)}
+        <circle cx="${is.x}" cy="${is.y-4}" r="30" fill="${is.color}" stroke="#16313b" stroke-width="3" class="badge"/>
+        <circle cx="${is.x}" cy="${is.y-4}" r="30" fill="none" stroke="#c8372d" stroke-width="5" stroke-linecap="round"
+          stroke-dasharray="${(circ*frac).toFixed(1)} ${circ.toFixed(1)}" transform="rotate(-90 ${is.x} ${is.y-4})" opacity="${frac?1:0}"/>
+        <text x="${is.x}" y="${is.y+7}" text-anchor="middle" font-family="Chiron GoRound TC, Noto Sans TC, sans-serif" font-weight="900" font-size="30" fill="#fff">${is.glyph}</text>
+      </g>
+      <g transform="translate(${is.x},${is.y+is.r+12})">
+        <rect x="-50" y="-14" width="100" height="28" rx="9" fill="#fbf7ec" stroke="#16313b" stroke-width="2.5"/>
+        <text x="0" y="6" text-anchor="middle" font-family="Chiron GoRound TC, Noto Sans TC, sans-serif" font-weight="700" font-size="17" fill="#16313b">${is.name}</text>
+      </g>`;
+    g.addEventListener("click",()=>select(is.key,true));
+    g.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();select(is.key,true)}});
+    svg.appendChild(g);
+  });
+}
+function trees(is,seed){
+  const R=rng(seed+9);let s="";const n=is.r>60?4:3;
+  for(let k=0;k<n;k++){
+    const a=-Math.PI*.9+k*(Math.PI*1.8/(n-1))+R()*.3, rr=is.r*.62;
+    const x=is.x+Math.cos(a)*rr*1.1,y=is.y+Math.sin(a)*rr*.82;
+    if(Math.abs(y-(is.y-4))<26&&Math.abs(x-is.x)<40)continue;
+    s+=`<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${(6+R()*4).toFixed(1)}" fill="#3f8f45" stroke="#16313b" stroke-width="1.8"/>`;
+  }
+  return s;
+}
+
+/* ===== 科目膠囊 ===== */
+function drawChips(){
+  $("#chips").innerHTML=ISLANDS.map(is=>{const[d,t]=islandDone(is);
+    return`<button class="chip" type="button" data-k="${is.key}" aria-pressed="${is.key===current}"><i style="background:${is.color}">${is.glyph}</i>${is.name}<em>${d}/${t}</em></button>`}).join("");
+  $("#chips").querySelectorAll(".chip").forEach(b=>b.addEventListener("click",()=>select(b.dataset.k,true)));
+}
+
+/* ===== 碼頭面板 ===== */
+function vidTile(v){
+  const done=stamps.has(v.id);
+  return`<button class="vid" type="button" data-id="${v.id}">
+    <div class="thumb"><img loading="lazy" alt="" src="https://i.ytimg.com/vi/${v.id}/mqdefault.jpg">
+      <span class="play"><svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><path d="M3 1.5v11l9-5.5z" fill="#fff"/></svg></span></div>
+    <h4>${esc(v.title)}</h4>
+    <small><b>${esc(v.views)}</b> 次觀看</small>
+    ${done?`<span class="stampmark">已蓋<br>郵戳</span>`:""}
+  </button>`;
+}
+function drawDock(){
+  const q=$("#q").value.trim().toLowerCase();
+  let html="";
+  if(q){
+    const hits=VIDEOS.filter(v=>(v.title+v.channel+v.teacher+v.island.name).toLowerCase().includes(q));
+    html=`<div class="dock-head"><div class="dock-flag" style="background:#16313b">尋</div>
+      <div class="grow"><h2>搜尋「${esc(q)}」</h2><p>找到 ${hits.length} 支影片</p></div>
+      <button class="btn ghost" type="button" id="clearQ">清除搜尋</button></div>`;
+    html+=hits.length?`<div class="channel"><div class="vids">${hits.map(v=>vidTile(v).replace("<h4>",`<h4><span style="color:${v.island.color}">${v.island.glyph}・</span>`)).join("")}</div></div>`
+      :`<div class="empty">沒有找到相關影片，換個關鍵字試試，例如「段考」「會考」或老師名字。</div>`;
+  }else{
+    const is=ISLANDS.find(i=>i.key===current);const[d,t]=islandDone(is);
+    html=`<div class="dock-head"><div class="dock-flag" style="background:${is.color}">${is.glyph}</div>
+      <div class="grow"><h2>${is.name}</h2><p>${is.desc}　${is.ch.length} 位老師・郵戳 ${d} / ${t}</p></div></div>
+      <div class="channels">${is.ch.map(c=>`<article class="channel">
+        <div class="channel-top"><h3>${esc(c[0])}</h3><span>${esc(c[1])}</span><span class="subs">${esc(c[2])} 訂閱</span></div>
+        <div class="vids">${c[3].map(v=>vidTile(VIDEOS.find(x=>x.id===v[0]))).join("")}</div></article>`).join("")}</div>`;
+  }
+  $("#dock").innerHTML=html;
+  $("#dock").querySelectorAll(".vid").forEach(b=>b.addEventListener("click",()=>openVideo(b.dataset.id)));
+  $("#clearQ")?.addEventListener("click",()=>{$("#q").value="";drawDock()});
+}
+
+let current="math";
+try{const s=localStorage.getItem("islands-current");if(s&&ISLANDS.some(i=>i.key===s))current=s}catch(e){}
+function select(k,scroll){
+  current=k;$("#q").value="";
+  try{localStorage.setItem("islands-current",k)}catch(e){}
+  refresh();
+  if(scroll)$("#dock").scrollIntoView({behavior:matchMedia("(prefers-reduced-motion: reduce)").matches?"auto":"smooth",block:"start"});
+}
+function refresh(){drawMap();drawChips();drawDock();updatePassport()}
+function updatePassport(){
+  $("#stampCount").textContent=stamps.size;
+  const c=2*Math.PI*16;$("#ringArc").setAttribute("stroke-dasharray",`${(c*stamps.size/VIDEOS.length).toFixed(1)} ${c.toFixed(1)}`);
+}
+
+/* ===== 專注播放艙 ===== */
+let playing=null,lastFocus=null;
+function playlistFor(v){ // 搜尋中依搜尋結果，否則依該島順序
+  const q=$("#q").value.trim().toLowerCase();
+  return q?VIDEOS.filter(x=>(x.title+x.channel+x.teacher+x.island.name).toLowerCase().includes(q)):VIDEOS.filter(x=>x.island===v.island);
+}
+function openVideo(id){
+  const v=VIDEOS.find(x=>x.id===id);if(!v)return;
+  if(!playing)lastFocus=document.activeElement;
+  playing=v;
+  const src=`https://www.youtube-nocookie.com/embed/${id}?autoplay=1&rel=0&playsinline=1&iv_load_policy=3&modestbranding=1`;
+  $("#screen").innerHTML=`<iframe src="${src}" title="${esc(v.title)}" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe>`;
+  $("#cabinTag").textContent=v.island.name;$("#cabinTag").style.background=v.island.color;
+  $("#cabinTitle").textContent=v.title;
+  $("#cabinMeta").textContent=`${v.channel}・${v.teacher}・${v.views} 次觀看`;
+  $("#ytFallback").href=`https://www.youtube.com/watch?v=${id}`;
+  setDone();
+  $("#cabin").hidden=false;document.body.style.overflow="hidden";
+  $("#closeBtn").focus();
+}
+function setDone(){
+  const d=stamps.has(playing.id);
+  $("#doneBtn").textContent=d?"已蓋郵戳（再按取消）":"看完了，蓋郵戳";
+}
+function closeVideo(){
+  $("#screen").innerHTML="";$("#cabin").hidden=true;document.body.style.overflow="";playing=null;
+  refresh();lastFocus?.focus?.();
+}
+function step(dir){
+  const list=playlistFor(playing);const i=list.findIndex(x=>x.id===playing.id);
+  openVideo(list[(i+dir+list.length)%list.length].id);
+}
+$("#closeBtn").addEventListener("click",closeVideo);
+$("#prevBtn").addEventListener("click",()=>step(-1));
+$("#nextBtn").addEventListener("click",()=>step(1));
+$("#doneBtn").addEventListener("click",()=>{
+  if(stamps.has(playing.id)){stamps.delete(playing.id)}else{stamps.add(playing.id);toast(`蓋上郵戳！已收集 ${stamps.size} / ${VIDEOS.length}`)}
+  saveStamps();setDone();updatePassport();
+});
+document.addEventListener("keydown",e=>{if(e.key==="Escape"&&playing)closeVideo()});
+
+$("#randomBtn").addEventListener("click",()=>{
+  const pool=VIDEOS.filter(v=>!stamps.has(v.id));const list=pool.length?pool:VIDEOS;
+  const v=list[Math.floor(Math.random()*list.length)];
+  current=v.island.key;try{localStorage.setItem("islands-current",current)}catch(e){}
+  $("#q").value="";refresh();openVideo(v.id);
+});
+let qt;$("#q").addEventListener("input",()=>{clearTimeout(qt);qt=setTimeout(drawDock,150)});
+
+let tt;function toast(msg){const t=$("#toast");t.textContent=msg;t.classList.add("show");clearTimeout(tt);tt=setTimeout(()=>t.classList.remove("show"),2200)}
+
+refresh();
+</script>
+</body>
+</html>
