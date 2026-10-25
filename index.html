@@ -134,6 +134,11 @@ header.top{
   margin-left:auto;font-size:12px;font-weight:700;border:1.5px solid var(--line);border-radius:999px;padding:1px 10px;
   font-variant-numeric:tabular-nums;color:var(--ink-soft)
 }
+.channel-top .ch-link{
+  font-size:12.5px;font-weight:700;color:var(--sea-deep);text-decoration:none;border:1.5px solid var(--sea-deep);
+  border-radius:999px;padding:1px 10px;white-space:nowrap
+}
+.channel-top .ch-link:hover{background:var(--sea-deep);color:#fff}
 .vids{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
 .vid{
   cursor:pointer;text-align:left;border:0;background:transparent;padding:0;display:flex;flex-direction:column;gap:8px;min-width:0;position:relative;
@@ -333,6 +338,19 @@ const ISLANDS=[
  ]}
 ];
 
+/* 各頻道的 YouTube 網址代號 */
+const HANDLES={
+ "均一教育平台":"@JunyiAcademy","臺北酷課雲":"@CooC-Cloud","Ai學霸":"@Ai-vq2js","Ten叔叔的10%學習法":"@10uncleai","逗點教室":"@逗點教室",
+ "國高中數學急救包":"@DCmathHospital","數學很簡單":"@ez-way","凱爺數學招待所":"@kieyamath","劉星數學":"@andyimath",
+ "阿滴英文":"@rayduenglish","外文列車":"@外文列車","Ai學霸 國中英語":"@ai_9286",
+ "陳漢國文":"@chenhanchinese","九歌X輕鬆點國文":"@九歌X輕鬆點國文","陳蒂國文":"@chendichinese","國文哪有這麼難":"@Chanyun666","鄒老師十分鐘國文輕鬆讀":"@ezchtsou",
+ "李天豪":"@Tenhao1978","Taiwan Bar 臺灣吧":"@TaiwanBar","宜蓉的歷史課":"@ogiwu","港港社會 一學就會":"@happyschool1111","學習銀行 StudyBank":"@studybankSB",
+ "翻轉地理教室":"@翻轉地理教室","朱航儀老師的地理":"@chuhangyiGEO","思路建立":"@思路建立",
+ "公民叮":"@gongmingding","曾鋒老師的生物教室":"@tzeng_feng",
+ "韓斯頭殼 HansTalk":"@hanstalk5566","震東老師 & 數學甜心禹臻":"@teacherZD","FOX老師教學分享":"@FOXstandbyyou","國中理化自學":"@songlin1",
+ "劉維自然":"@teacherliuwei","自然老師劉翔研究中":"@Ls.science","王捷自然&自然不難":"@wang-jay","張妤自然":"@tacooec321","廖柏坤資優自然":"@JasonLiao-skkljoyce","張囧的自然小教室":"@Zeroda"
+};
+
 /* 攤平成影片清單 */
 const VIDEOS=[];
 ISLANDS.forEach(is=>is.ch.forEach(c=>c[3].forEach(v=>VIDEOS.push({id:v[0],title:v[1],views:v[2],channel:c[0],teacher:c[1],island:is}))));
@@ -470,7 +488,7 @@ function drawDock(){
     html=`<div class="dock-head"><div class="dock-flag" style="background:${is.color}">${is.glyph}</div>
       <div class="grow"><h2>${is.name}</h2><p>${is.desc}　${is.ch.length} 位老師・郵戳 ${d} / ${t}</p></div></div>
       <div class="channels">${is.ch.map(c=>`<article class="channel">
-        <div class="channel-top"><h3>${esc(c[0])}</h3><span>${esc(c[1])}</span><span class="subs">${esc(c[2])} 訂閱</span></div>
+        <div class="channel-top"><h3>${esc(c[0])}</h3><span>${esc(c[1])}</span><span class="subs">${esc(c[2])} 訂閱</span>${HANDLES[c[0]]?`<a class="ch-link" href="https://www.youtube.com/${HANDLES[c[0]]}" target="_blank" rel="noopener" aria-label="前往 ${esc(c[0])} 的 YouTube 頻道（另開分頁）">老師頻道 ↗</a>`:""}</div>
         <div class="vids">${c[3].map(v=>vidTile(VIDEOS.find(x=>x.id===v[0]))).join("")}</div></article>`).join("")}</div>`;
   }
   $("#dock").innerHTML=html;
